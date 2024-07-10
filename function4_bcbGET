@@ -1,4 +1,5 @@
 bcbGET <- function(){
+  library(rbcb)
   # IBCBr
   IBC_BR = rbcb::get_series(c(IBC_BR = 24363), start_date = "01-01-2003")
   # IBC_BR = GetBCBData::gbcbd_get_series(id = 24363, first.date = "01-01-2003")
