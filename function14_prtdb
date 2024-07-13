@@ -3,7 +3,7 @@
 ###                     LARGE FUNCTION 5: prtdb.1s                      ###
 ###########################################################################
 df = upperbalance(df)
-prtdb.1s <- function(df, y, q){
+prtdb <- function(df, y, q){
   # count NAs
   library(dplyr)
   library(lubridate)
@@ -100,5 +100,5 @@ prtdb.1s <- function(df, y, q){
   return(df2)
 }
 
-# prtdb = prtdb.1s(df, 2023, 2)
+# prtdb = prtdb(df, 2023, 2)
 # tail(prtdb)
