@@ -69,6 +69,7 @@ rtdb.ts <- function(df){
     filter(date <= paste0(year,"-",month, "-01"))
   filtered.out <-   df %>%
     filter(date > paste0(year,"-",month, "-01"))
+  filtered.out <- filtered.out[1:3,]
   df = list(df.in  = filtered.in,
             df.out = filtered.out)  
   return(df)
