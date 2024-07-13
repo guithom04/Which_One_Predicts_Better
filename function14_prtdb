@@ -1,6 +1,6 @@
 ###########################################################################
 ###                NOWCASTING: WHICH ONE PREDICTS BETTER                ###
-###                     LARGE FUNCTION 5: prtdb.1s                      ###
+###                     LARGE FUNCTION 5: prtdb                         ###
 ###########################################################################
 df = upperbalance(df)
 prtdb <- function(df, y, q){
