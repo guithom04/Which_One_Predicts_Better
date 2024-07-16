@@ -1,6 +1,6 @@
 ###########################################################################
 ###                NOWCASTING: WHICH ONE PREDICTS BETTER                ###
-###                      LARGE FUNCTION 9:midas_ts                      ###
+###                      LARGE FUNCTION 10:midas_ts                     ###
 ###########################################################################
 midas_ts <- function(year,quarter){
   
