@@ -1,6 +1,6 @@
 ###########################################################################
 ###                NOWCASTING: WHICH ONE PREDICTS BETTER                ###
-###                   LARGE FUNCTION 11:forecast_models                 ###
+###                  LARGE FUNCTION 11:forecast_models                  ###
 ###########################################################################
 library(keras)
 library(tensorflow)
