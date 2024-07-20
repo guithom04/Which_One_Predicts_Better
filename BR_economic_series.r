@@ -1,4 +1,4 @@
-BR_economic_series1 <- function(){
+BR_economic_series <- function(){
   # function perfectly informed market expectations
   yoy = function(series){
     index = 1:length(series)
@@ -465,5 +465,5 @@ BR_economic_series1 <- function(){
   tail(merged_df)
   return(merged_df)
 }
-df = BR_economic_series1()
+df = BR_economic_series()
 tail(df)
