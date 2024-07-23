@@ -4,6 +4,7 @@ library(zoo)
 library(tidyr)
 
 
+# first must execute this 
 # real time dataframe
 BR_economic_series <- function(){
   # function perfectly informed market expectations
@@ -473,7 +474,6 @@ BR_economic_series <- function(){
   return(merged_df)
 }
 df = BR_economic_series()
-tail(df)
 
 # upperbalance
 upperbalance <- function(df) {
@@ -489,54 +489,52 @@ df <- df %>%
 tail(df)  
 
 
-# Define the days, delays df
-delays <- list(
-  pib = c(1, 90),
-  expec = c(1, 7),
-  pim = c(4, 52),
-  pim_bk = c(4, 52),
-  pim_bi = c(4, 52),
-  pmca = c(14, 52),
-  area = c(13, 48),
-  housing = c(12, 48),
-  pmcv = c(14, 52),
-  pmc_comb = c(14, 52),
-  pmc_super = c(14, 52),
-  tecidos = c(14, 52),
-  nuci = c(2, 28),
-  ibc_br = c(26, 56),
-  caged_a12 = c(26, 54),
-  ABPO = c(3, 28),
-  fenabrave = c(25, 28),
-  anp = c(16, 28),
-  ibov = c(6, 87),
-  anfavea = c(6, 31),
-  bp = c(4, 28),
-  idp = c(4, 28),
-  expinf = c(5, 27),
-  primario = c(28, 27),
-  credito = c(26, 27),
-  ettj = c(19, 27),
-  cambio = c(5, 25),
-  cdi = c(19, 54),
-  m2 = c(4, 52),
-  imports = c(4, 28),
-  Energia = c(8, 145),
-  icea = c(6, 63),
-  iec = c(6, 62),
-  exports = c(9, 28),
-  iof = c(17, 32),
-  nasdaq = c(4, 22),
-  dow_jones = c(4, 22)
-)
 
-# Ensure the date column is in Date format
-df$date <- as.Date(df$date)
+# now we can produce daily prtdb
 
-# Create a complete sequence of daily dates
-all_dates <- data.frame(date = seq(min(df$date, na.rm = TRUE), max(df$date, na.rm = TRUE), by = "day"))
+# Define helper functions
+qtr2month <- function(x, reference_month = 3, interpolation = FALSE) {
+  if (!reference_month %in% c(1, 2, 3)) {
+    stop("The reference_month should be 1, 2 or 3")
+  }
+  
+  if (!is.ts(x)) {
+    stop("x should be a ts object")
+  }
+  
+  if (!is.null(dim(x))) {
+    stop("x should be a single ts object")
+  }
+  
+  data_q <- zoo::as.Date(x)
+  data_m <- seq(data_q[1], data_q[length(data_q)], by = 'months')
+  out_x <- ts(rep(NA, length(data_m)),
+              start = as.numeric(c(substr(data_q[1], 1, 4), substr(data_q[1], 6, 7))),
+              frequency = 12)
+  out_x[data_m %in% data_q] <- x
+  
+  if (reference_month %in% c(2, 3)) {
+    out_x <- stats::lag(out_x, -(reference_month - 1))
+    data_q <- zoo::as.Date(out_x)
+    data_m <- seq(data_q[1], data_q[length(data_q)], by = 'months')
+  }
+  
+  if (interpolation) {
+    xout <- zoo::as.yearmon(data_m)
+    out_x <- stats::approx(out_x, xout = xout, method = "linear")
+    out_x <- ts(out_x$y, start = out_x$x[1], end = out_x$x[length(out_x$x)], frequency = 12)
+  }
+  
+  return(out_x)
+}
 
-# Function to apply delays to a series
+yoy <- function(series) {
+  index <- 1:(length(series) - 12)
+  YoY <- series[12 + index] / series[index] - 1
+  return(ts(na.omit(YoY), start = c(start(series)[1] + 1, start(series)[2]), frequency = 12))
+}
+
+# Define function to apply delays
 apply_delays <- function(series_name, df, delays) {
   delay_info <- delays[[series_name]]
   release_day <- delay_info[1]
@@ -551,6 +549,9 @@ apply_delays <- function(series_name, df, delays) {
   return(df_series)
 }
 
+# Create a complete sequence of daily dates
+all_dates <- data.frame(date = seq(min(df$date, na.rm = TRUE), max(df$date, na.rm = TRUE), by = "day"))
+
 # Apply delays to each series and merge into one dataframe
 df_adjusted <- all_dates
 
@@ -560,10 +561,23 @@ for (series_name in names(delays)) {
     left_join(df_series %>% select(date, !!sym(series_name)), by = "date")
 }
 
-# this is the daily pseudo real time dataframe
+# Fill initial missing values with the first non-NA value from the original df
+for (series_name in names(delays)) {
+  first_value <- df %>% filter(!is.na(!!sym(series_name))) %>% slice(1) %>% pull(!!sym(series_name))
+  df_adjusted[[series_name]] <- ifelse(is.na(df_adjusted[[series_name]]), first_value, df_adjusted[[series_name]])
+}
+
+# Fill remaining missing values downwards
 df_adjusted <- df_adjusted %>%
   fill(everything(), .direction = "down")
+
+View(df_adjusted)
 
 # Save the dataframe as an R object
 save(df_adjusted, file = "df_adjusted.RData")
 
+# Load the dataframe
+load("df_adjusted.RData")
+
+# Print the tail of the dataframe to verify the adjustments
+tail(df_adjusted)
