@@ -1,5 +1,3 @@
-# midas disaggregated model
-# vintage disag
 disag.base <- function(df, year, month) {
   library(dplyr)
   
@@ -43,6 +41,3 @@ disag.base <- function(df, year, month) {
   
   return(df)
 }
-# user guide
-result <- disag.base(df, 2022, 3)
-tail(result)
